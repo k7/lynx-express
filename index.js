@@ -61,14 +61,15 @@ function factory(client) { // Client is a Lynx StatsD client
             routeName = req.method + '_' + routeName;
           }
           else if (req.url) { // Required to pickup static routes
-            routeName = req.method + '_' + req.url;
+            routeName = req.method + '_' + req.url.split('?')[0].replace(/^.*?\/\/.*?\//,'');
           }
 
           // Get rid of : in route names, remove first and last /,
           // and replace rest with _.
-          routeName = 'response_time.' + routeName.replace(/:/g, "").replace(/^\/|\/$/g, "").replace(/\//g, "_");
+          routeName = routeName.replace(/:/g, "").replace(/^\/|\/$/g, "").replace(/\//g, "_");
           endTime = new Date();
-          client.timing(routeName, endTime - startTime);
+          client.timing('response_time.' + routeName, endTime - startTime);
+          client.increment(routeName + '.' + res.statusCode);
         } else {
           endTime = new Date();
           client.timing('response_time', endTime - startTime);
