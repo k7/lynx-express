@@ -39,6 +39,8 @@ function factory(client) { // Client is a Lynx StatsD client
       var end = res.end;
       res.end = function () {
         end.apply(res, arguments);
+        if('stats=no'.indexOf(req.url) > -1)
+          return null;
 
         client.increment('response_code.' + res.statusCode);
 
