@@ -30,6 +30,7 @@ function factory(client) { // Client is a Lynx StatsD client
   return function (options) {
     options = options || {};
     var timeByUrl = options.timeByUrl || false;
+    var url = required('url')
 
     return function (req, res, next) {
       var startTime = new Date();
@@ -39,8 +40,6 @@ function factory(client) { // Client is a Lynx StatsD client
       var end = res.end;
       res.end = function () {
         end.apply(res, arguments);
-        if('stats=no'.indexOf(req.url) > -1)
-          return null;
 
         client.increment('response_code.' + res.statusCode);
 
@@ -53,17 +52,15 @@ function factory(client) { // Client is a Lynx StatsD client
             routeName = res.locals.statsdUrlKey;
           } else if (req.route && req.route.path) {
             routeName = req.route.path;
-            if (Object.prototype.toString.call(routeName) === '[object RegExp]') {
-              // Might want to do some sanitation here?
-              routeName = routeName.source;
-            }
             if (routeName === "/") {
               routeName = "root";
+            }else if(typeof routeName == 'string'){
+              routeName = req.method + '_' + routeName;
+            }if (req.url) {
+              routeName = req.method + '_' + url.parse(req.url).pathname
             }
-            routeName = req.method + '_' + routeName;
-          }
-          else if (req.url) { // Required to pickup static routes
-            routeName = req.method + '_' + req.url.split('?')[0].replace(/^.*?\/\/.*?\//,'');
+          }if (req.url) { // Required to pickup static routes
+              routeName = req.method + '_static_files'
           }
 
           // Get rid of : in route names, remove first and last /,
