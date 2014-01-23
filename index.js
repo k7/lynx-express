@@ -30,7 +30,7 @@ function factory(client) { // Client is a Lynx StatsD client
   return function (options) {
     options = options || {};
     var timeByUrl = options.timeByUrl || false;
-    var url = required('url')
+    var url = require('url')
 
     return function (req, res, next) {
       var startTime = new Date();
