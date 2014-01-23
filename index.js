@@ -66,12 +66,13 @@ function factory(client) { // Client is a Lynx StatsD client
           // Get rid of : in route names, remove first and last /,
           // and replace rest with _.
           routeName = routeName.replace(/:/g, "").replace(/^\/|\/$/g, "").replace(/\//g, "_");
-          
+
           endTime = new Date();
-          client.timing('response_time.' + routeName, endTime - startTime);
           if(res.statusCode == 404){
+            client.timing('response_time.404_NotFound.' + routeName, endTime - startTime);
             client.increment('404_NotFound.' + routeName);
           }else{
+            client.timing('response_time.' + routeName, endTime - startTime);
             client.increment(routeName + '.' + res.statusCode);            
           }
         } else {
